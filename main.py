@@ -8,6 +8,7 @@ writing: UTF-8 text of 1-200 characters, not only whitespace, a single
 line.
 """
 
+import argparse
 import os
 import sys
 
@@ -35,12 +36,29 @@ def check_gate(text):
     return problems
 
 
-def main():
+def main(argv=None):
+    parser = argparse.ArgumentParser(
+        description="Write the Make the AI Judge Laugh entry line."
+    )
+    parser.add_argument(
+        "--dry-run",
+        action="store_true",
+        help="check the gate and print the line without writing it",
+    )
+    args = parser.parse_args(argv)
+
     problems = check_gate(LINE)
     if problems:
         for problem in problems:
             print("gate failure: " + problem, file=sys.stderr)
         sys.exit(1)
+
+    if args.dry_run:
+        # Validate without touching the disk, so the entry can be
+        # tested in environments where /output is not writable.
+        print("gate ok: %d characters" % len(LINE))
+        print(LINE)
+        return
 
     out_dir = os.environ.get("OUTPUT_DIR", "/output")
     os.makedirs(out_dir, exist_ok=True)
